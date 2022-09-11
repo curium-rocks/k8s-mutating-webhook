@@ -1,5 +1,5 @@
-# Kube-Admission-Controller-Starter
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_kube-admission-controller-starter&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=curium-rocks_kube-admission-controller-starter) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_kube-admission-controller-starter&metric=coverage)](https://sonarcloud.io/summary/new_code?id=curium-rocks_kube-admission-controller-starter) [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_kube-admission-controller-starter&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=curium-rocks_kube-admission-controller-starter) [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_kube-admission-controller-starter&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=curium-rocks_kube-admission-controller-starter) [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_kube-admission-controller-starter&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=curium-rocks_kube-admission-controller-starter) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_kube-admission-controller-starter&metric=bugs)](https://sonarcloud.io/summary/new_code?id=curium-rocks_kube-admission-controller-starter)
+# k8s-mutating-webhook
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_k8s-mutating-webhook&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=curium-rocks_k8s-mutating-webhook) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_k8s-mutating-webhook&metric=coverage)](https://sonarcloud.io/summary/new_code?id=curium-rocks_k8s-mutating-webhook) [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_k8s-mutating-webhook&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=curium-rocks_k8s-mutating-webhook) [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_k8s-mutating-webhook&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=curium-rocks_k8s-mutating-webhook) [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_k8s-mutating-webhook&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=curium-rocks_k8s-mutating-webhook) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_k8s-mutating-webhook&metric=bugs)](https://sonarcloud.io/summary/new_code?id=curium-rocks_k8s-mutating-webhook)
 
 This template provides a kick start to making a kubernetes admission controller using TypeScript and Node.JS, uses a Validating Webhook.
 - [Kubernetes-client/client-node](https://github.com/kubernetes-client/javascript)
@@ -34,7 +34,7 @@ The following scripts are included in the NPM project configuration
 - `helm:uninstallCertManager` remove cert-manager from the k8s cluster
 
 ## Deploy it
-First add the helm repos `helm repo add k8s https://curium-rocks.github.io/kube-admission-controller-starter` fetch updates `helm repo update`. 
+First add the helm repos `helm repo add k8s https://curium-rocks.github.io/k8s-mutating-webhook` fetch updates `helm repo update`. 
 
 Verify it worked `helm search repo k8s` and you should see something like.
 
@@ -43,12 +43,12 @@ NAME                                                    CHART VERSION   APP VERS
 k8s/kube-admission-controller...      0.1.0           0.1.0           A starter template for a dynamic admission vali...
 ```
 
-Deploy the app `helm upgrade --install starter k8s/kube-admission-controller-starter`
+Deploy the app `helm upgrade --install starter k8s/k8s-mutating-webhook`
 
 Verify it worked `kubectl run testpod --image=badbox` you should see an error message like this:
 
 ```
-Error from server: admission webhook "starter-kube-admission-controller-starter.default.svc" denied the request: One of the images in [badbox] is not allowed, denied
+Error from server: admission webhook "starter-k8s-mutating-webhook.default.svc" denied the request: One of the images in [badbox] is not allowed, denied
 ```
 
 ## Structure
@@ -74,4 +74,4 @@ This file maps the types defined in `./src/types.ts` to interface types. For mor
 3) [ ] Point badges in README.md to correct location for you repo
 3) [ ] Update [renovate.json](./renovate.json) to meet desired behavior for your needs, docs can be found [here](https://docs.renovatebot.com).
 4) [ ] Update this readme to reflect your project name and info
-5) [ ] Rename all `kube-admission-controller-starter` references to match your project name
+5) [ ] Rename all `k8s-mutating-webhook` references to match your project name
