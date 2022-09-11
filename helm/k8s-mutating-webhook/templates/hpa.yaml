@@ -6,14 +6,14 @@ apiVersion: autoscaling/v2beta1
 {{- end }}
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "kube-admission-controller-starter.fullname" . }}
+  name: {{ include "k8s-mutating-webhook.fullname" . }}
   labels:
-    {{- include "kube-admission-controller-starter.labels" . | nindent 4 }}
+    {{- include "k8s-mutating-webhook.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "kube-admission-controller-starter.fullname" . }}
+    name: {{ include "k8s-mutating-webhook.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:

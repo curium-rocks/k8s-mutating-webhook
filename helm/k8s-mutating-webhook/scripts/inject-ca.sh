@@ -8,4 +8,4 @@ TLS_PEM=$(kubectl --namespace $RELEASE_NAMESPACE get secret $SECRET_NAME -o json
 echo "$TLS_PEM"
 
 # Once we have the CA value we need to patch the validating webhook
-kubectl --namespace "$RELEASE_NAMESPACE" patch validatingwebhookconfiguration "$HOOK_NAME" -p "{\"webhooks\":[{\"name\":\"$HOOK_SVC_NAME\",\"clientConfig\":{\"caBundle\":\"$TLS_PEM\"}}]}"
+kubectl --namespace "$RELEASE_NAMESPACE" patch mutatingwebhookconfiguration "$HOOK_NAME" -p "{\"webhooks\":[{\"name\":\"$HOOK_SVC_NAME\",\"clientConfig\":{\"caBundle\":\"$TLS_PEM\"}}]}"

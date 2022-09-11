@@ -1,11 +1,11 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/curium-rocks/kube-admission-controller-starter
+  repository: ghcr.io/curium-rocks/k8s-mutating-webhook
   pullPolicy: Always
   tag: main
 
-tlsSecretName: "kube-admission-controller-starter"
+tlsSecretName: "k8s-mutating-webhook"
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""

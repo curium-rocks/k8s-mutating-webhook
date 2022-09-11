@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "kube-admission-controller-starter.fullname" . }}
+  name: {{ include "k8s-mutating-webhook.fullname" . }}
   labels:
-    {{- include "kube-admission-controller-starter.labels" . | nindent 4 }}
+    {{- include "k8s-mutating-webhook.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "kube-admission-controller-starter.selectorLabels" . | nindent 6 }}
+      {{- include "k8s-mutating-webhook.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "kube-admission-controller-starter.selectorLabels" . | nindent 8 }}
+        {{- include "k8s-mutating-webhook.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "kube-admission-controller-starter.serviceAccountName" . }}
+      serviceAccountName: {{ include "k8s-mutating-webhook.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:

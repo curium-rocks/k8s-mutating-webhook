@@ -10,7 +10,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   namespace: {{ .Release.Namespace }}
-  name: {{ .Release.Name }}-validating-webhook-tls-reader
+  name: {{ .Release.Name }}-mutating-webhook-tls-reader
   annotations:
     "helm.sh/hook": post-install
     "helm.sh/hook-weight": "0"
@@ -28,7 +28,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ .Release.Name }}-validating-webhook-ca-injector
+  name: {{ .Release.Name }}-mutating-webhook-ca-injector
   annotations:
     "helm.sh/hook": post-install
     "helm.sh/hook-weight": "0"
@@ -36,8 +36,8 @@ metadata:
     "helm.sh/hook-delete-policy": "before-hook-creation,hook-succeeded"
 rules:
 - apiGroups: ["admissionregistration.k8s.io"]
-  resources: ["validatingwebhookconfigurations"]
-  resourceNames: ["{{ include "kube-admission-controller-starter.fullname" . }}-hooks"]
+  resources: ["mutatingwebhookconfigurations"]
+  resourceNames: ["{{ include "k8s-mutating-webhook.fullname" . }}-hooks"]
   verbs: ["get", "update", "patch"]
 
 {{- /*create sa for job*/}}
@@ -48,7 +48,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: {{ .Release.Name }}-post-install-job-sa
   labels:
-    {{- include "kube-admission-controller-starter.labels" . | nindent 4 }}
+    {{- include "k8s-mutating-webhook.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": post-install
     "helm.sh/hook-weight": "0"
@@ -73,7 +73,7 @@ subjects:
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role 
-  name: {{ .Release.Name }}-validating-webhook-tls-reader
+  name: {{ .Release.Name }}-mutating-webhook-tls-reader
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -91,7 +91,7 @@ subjects:
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole 
-  name: {{ .Release.Name }}-validating-webhook-ca-injector
+  name: {{ .Release.Name }}-mutating-webhook-ca-injector
   apiGroup: rbac.authorization.k8s.io
 
 {{- /* create a configmap with a shell script */}}
@@ -167,8 +167,8 @@ spec:
           - name: RELEASE_NAMESPACE
             value: "{{ .Release.Namespace }}"
           - name: HOOK_NAME
-            value: "{{ include "kube-admission-controller-starter.fullname" . }}-hooks"
+            value: "{{ include "k8s-mutating-webhook.fullname" . }}-hooks"
           - name: HOOK_SVC_NAME
-            value: "{{ include "kube-admission-controller-starter.fullname" . }}.{{ .Release.Namespace }}.svc"
+            value: "{{ include "k8s-mutating-webhook.fullname" . }}.{{ .Release.Namespace }}.svc"
         command: ["/job/entry-point.sh"]
 {{- end }}
