@@ -1,7 +1,7 @@
 # k8s-mutating-webhook
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_k8s-mutating-webhook&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=curium-rocks_k8s-mutating-webhook) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_k8s-mutating-webhook&metric=coverage)](https://sonarcloud.io/summary/new_code?id=curium-rocks_k8s-mutating-webhook) [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_k8s-mutating-webhook&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=curium-rocks_k8s-mutating-webhook) [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_k8s-mutating-webhook&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=curium-rocks_k8s-mutating-webhook) [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_k8s-mutating-webhook&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=curium-rocks_k8s-mutating-webhook) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=curium-rocks_k8s-mutating-webhook&metric=bugs)](https://sonarcloud.io/summary/new_code?id=curium-rocks_k8s-mutating-webhook)
 
-This template provides a kick start to making a kubernetes admission controller using TypeScript and Node.JS, uses a Validating Webhook.
+This template provides a kick start to making a kubernetes admission controller using TypeScript and Node.JS, uses a Mutating Webhook.
 - [Kubernetes-client/client-node](https://github.com/kubernetes-client/javascript)
 - [Jest](https://github.com/facebook/jest)
 - [Github Action CI](.github/workflows/ci.yaml)
@@ -11,9 +11,11 @@ This template provides a kick start to making a kubernetes admission controller 
 - [Config](https://github.com/node-config/node-config)
 - [Pino](https://github.com/pinojs/pino)
 - [Fastify](https://github.com/fastify/fastify)
+- [Fast Json Patch](https://github.com/Starcounter-Jack/JSON-Patch)
 - [InversifyJS](https://github.com/inversify/InversifyJS)
 - [Sonar Project File](./sonar-project.properties)
 - [Dockerfile](./Dockerfile)
+
 
 ## NPM Scripts
 The following scripts are included in the NPM project configuration
@@ -40,16 +42,13 @@ Verify it worked `helm search repo k8s` and you should see something like.
 
 ```
 NAME                                                    CHART VERSION   APP VERSION     DESCRIPTION                                       
-k8s/kube-admission-controller...      0.1.0           0.1.0           A starter template for a dynamic admission vali...
+k8s/k8s-mutating-webhook...      0.1.0           0.1.0           A starter template for a dynamic admission mut...
 ```
 
 Deploy the app `helm upgrade --install starter k8s/k8s-mutating-webhook`
 
-Verify it worked `kubectl run testpod --image=badbox` you should see an error message like this:
+Verify it worked `kubectl run testpod --image=busybox`, this will be changed, fetch it's yaml `kubectl get testpod -o yaml` you will see its `securityContext`'s have been enhanced.
 
-```
-Error from server: admission webhook "starter-k8s-mutating-webhook.default.svc" denied the request: One of the images in [badbox] is not allowed, denied
-```
 
 ## Structure
 ### [Services](./src/services/)
