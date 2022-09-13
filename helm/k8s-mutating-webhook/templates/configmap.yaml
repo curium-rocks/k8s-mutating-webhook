@@ -7,11 +7,6 @@ metadata:
 data:
   production.json: |
     {
-      "imageAcl": {
-        "allowed": {{ .Values.allowedImages | toJson }},
-        "blocked": {{ .Values.blockedImages | toJson }},
-        "strictMode": {{ .Values.strictMode }}
-      },
       "log": {
         "level": "{{ .Values.logLevel }}"
       },

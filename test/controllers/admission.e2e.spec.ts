@@ -2,7 +2,7 @@ import { describe, it, afterAll, beforeAll, expect } from '@jest/globals'
 import { CoreV1Api, KubeConfig, V1Namespace, V1Pod } from '@kubernetes/client-node'
 import { randomUUID } from 'node:crypto'
 
-const TEST_NAMESPACE = 'kube-starter-e2e-tests'
+const TEST_NAMESPACE = 'k8s-mutating-webhook'
 
 describe('controllers/admission', () => {
   let client: CoreV1Api
@@ -47,29 +47,10 @@ describe('controllers/admission', () => {
   afterAll(async () => {
     await deleteNamespace()
   })
-  it('Should block badbox with defaults', async () => {
-    try {
-      const resp = await client.createNamespacedPod(TEST_NAMESPACE, {
-        metadata: {
-          name: `test-badbox-${randomUUID()}`,
-          namespace: TEST_NAMESPACE
-        },
-        spec: {
-          containers: [{
-            image: 'badbox',
-            name: 'badbox'
-          }]
-        }
-      } as V1Pod)
-      expect(resp.response.statusMessage).not.toEqual('Created')
-    } catch (err) {
-      expect((err as any).body.message).toEqual('admission webhook "kube-admission-controller-starter.default.svc" denied the request: One of the images in [badbox] is not allowed, denied')
-    }
-  })
-  it('Should allow busybox with defaults', async () => {
+  it('Should enhance busybox', async () => {
     const resp = await client.createNamespacedPod(TEST_NAMESPACE, {
       metadata: {
-        name: `test-busybox-${randomUUID()}`,
+        name: `test-enhance-${randomUUID()}`,
         namespace: TEST_NAMESPACE
       },
       spec: {
@@ -80,5 +61,12 @@ describe('controllers/admission', () => {
       }
     } as V1Pod)
     expect(resp.response.statusMessage).toEqual('Created')
+    expect(resp.body.spec?.securityContext?.runAsNonRoot).toBeTruthy()
+    resp.body.spec?.containers.forEach((c) => {
+      expect(c.securityContext?.allowPrivilegeEscalation).toBeFalsy()
+      expect(c.securityContext?.privileged).toBeFalsy()
+      expect(c.securityContext?.readOnlyRootFilesystem).toBeTruthy()
+      expect(c.securityContext?.runAsNonRoot).toBeTruthy()
+    })
   })
 })

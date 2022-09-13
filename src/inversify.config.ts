@@ -22,9 +22,6 @@ appContainer.bind<CoreV1Api>(TYPES.K8S.CoreApi).toDynamicValue((context: interfa
   const builder = new K8sClientBuilder(CoreV1Api)
   return builder.buildClient(context.container.get<KubeConfig>(TYPES.K8S.Config)) as CoreV1Api
 })
-appContainer.bind<string[]>(TYPES.Config.AllowedList).toConstantValue(config.get<string[]>('imageAcl.allowed'))
-appContainer.bind<string[]>(TYPES.Config.BlockedList).toConstantValue(config.get<string[]>('imageAcl.blocked'))
-appContainer.bind<boolean>(TYPES.Config.StrictMode).toConstantValue(config.get<boolean>('imageAcl.strictMode'))
 appContainer.bind<boolean>(TYPES.Config.TLSEnabled).toConstantValue(config.get<boolean>('tls.enabled'))
 appContainer.bind<string>(TYPES.Config.TLSKeyPath).toConstantValue(config.get<string>('tls.keyPath'))
 appContainer.bind<string>(TYPES.Config.TLSCertPath).toConstantValue(config.get<string>('tls.certPath'))
