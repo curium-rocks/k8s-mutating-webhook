@@ -2,9 +2,15 @@ import { inject, injectable } from 'inversify'
 import { TYPES } from '../types'
 import { Logger } from 'pino'
 import { V1Pod, V1PodSpec } from '@kubernetes/client-node'
+import * as jsonpatch from 'fast-json-patch'
 
 export interface IAdmission {
-  admit(pod: V1Pod): Promise<V1Pod>
+  /**
+   * Take a pod and return the patch required for admission, [] if no patch operations are required
+   * @param pod raw pod that necessary patches will be applied to
+   * @returns string a JSON string of the JSONPatch
+   */
+  admit(pod: V1Pod): Promise<string>
 }
 
 @injectable()
@@ -16,7 +22,8 @@ export class Admission implements IAdmission {
     this.logger = parentLogger.child({ module: 'services/Admission' })
   }
 
-  async admit (pod: V1Pod): Promise<V1Pod> {
+  async admit (pod: V1Pod): Promise<string> {
+    const observer = jsonpatch.observe<V1Pod>(pod)
     const spec = pod.spec as V1PodSpec
     if (!spec.securityContext) spec.securityContext = {}
     if (!spec.securityContext.runAsNonRoot) spec.securityContext.runAsNonRoot = true
@@ -28,6 +35,7 @@ export class Admission implements IAdmission {
       if (!c.securityContext.runAsNonRoot) c.securityContext.runAsNonRoot = true
       return c
     })
-    return Promise.resolve(pod)
+    return Promise.resolve(JSON.stringify(jsonpatch.generate(observer))
+    )
   }
 }

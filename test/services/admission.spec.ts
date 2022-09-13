@@ -18,14 +18,8 @@ describe('services/admission', () => {
         }]
       }
     }
-    const mutatedPod = await service.admit(newPod)
-    expect(mutatedPod.spec?.securityContext?.runAsNonRoot).toBeTruthy()
-    mutatedPod.spec?.containers.forEach((c) => {
-      expect(c.securityContext?.allowPrivilegeEscalation).toBeFalsy()
-      expect(c.securityContext?.privileged).toBeFalsy()
-      expect(c.securityContext?.readOnlyRootFilesystem).toBeTruthy()
-      expect(c.securityContext?.runAsNonRoot).toBeTruthy()
-    })
+    const patch = await service.admit(newPod)
+    expect(patch).toEqual('[{"op":"add","path":"/spec/containers/0/securityContext","value":{"allowPrivilegeEscalation":false,"privileged":false,"readOnlyRootFilesystem":true,"runAsNonRoot":true}},{"op":"add","path":"/spec/securityContext","value":{"runAsNonRoot":true}}]')
   })
   it('Should not mutate already secure pod', async () => {
     const service = new Admission(pinoLogger)
@@ -46,7 +40,7 @@ describe('services/admission', () => {
         }]
       }
     }
-    const nonMutatedPod = await service.admit(newPod)
-    expect(nonMutatedPod).toEqual(newPod)
+    const patch = await service.admit(newPod)
+    expect(patch).toEqual('[]')
   })
 })
