@@ -2,7 +2,6 @@ import { V1Pod } from '@kubernetes/client-node'
 import { FastifyInstance, FastifyPluginOptions } from 'fastify'
 import { IAdmission } from '../services/admission'
 import { TYPES } from '../types'
-import * as jsonpatch from 'fast-json-patch'
 
 export function AdmissionController (instance: FastifyInstance, opts: FastifyPluginOptions, done: Function) {
   instance.log.info('Registering AdmissionController')
@@ -14,17 +13,15 @@ export function AdmissionController (instance: FastifyInstance, opts: FastifyPlu
     const body: any = req.body
     if (body.kind === 'AdmissionReview' && body.request.operation === 'CREATE' && body.request.kind.kind === 'Pod') {
       const newPod: V1Pod = body.request.object
-      const observer = jsonpatch.observe<V1Pod>(newPod)
-      await admissionService.admit(newPod)
-      const diff = jsonpatch.generate(observer)
-      instance.log.info('Generated patch = %j', diff)
+      const patch = await admissionService.admit(newPod)
+      instance.log.info('Generated patch = %s', patch)
       reply.send({
         apiVersion: 'admission.k8s.io/v1',
         kind: 'AdmissionReview',
         response: {
           uid: body.request.uid,
           allowed: true,
-          patch: Buffer.from(JSON.stringify(diff)).toString('base64'),
+          patch: Buffer.from(patch).toString('base64'),
           patchType: 'JSONPatch'
         }
       })

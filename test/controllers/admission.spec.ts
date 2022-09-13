@@ -8,6 +8,7 @@ import { Container } from 'inversify'
 import { TYPES } from '../../src/types'
 import pino from 'pino'
 import { V1Pod } from '@kubernetes/client-node'
+import * as jsonpatch from 'fast-json-patch'
 
 function buildCreatePodRequest (imageName: string) : any {
   const baseReq = require('../requests/createPod.json')
@@ -33,10 +34,11 @@ describe('controllers/admission', () => {
   })
   it('Should patch pods when needed', async () => {
     jest.spyOn(mockAdmissionService, 'admit').mockImplementation((pod: V1Pod) => {
+      const observer = jsonpatch.observe<V1Pod>(pod)
       if (!pod.metadata) pod.metadata = {}
       if (!pod.metadata.annotations) pod.metadata.annotations = {}
       pod.metadata.annotations.test = 'test'
-      return Promise.resolve(pod)
+      return Promise.resolve(JSON.stringify(jsonpatch.generate(observer)))
     })
     const payload = buildCreatePodRequest('busybox')
     const result = await fastify.inject({
@@ -53,7 +55,8 @@ describe('controllers/admission', () => {
   })
   it('Should only mutate pods when required', async () => {
     jest.spyOn(mockAdmissionService, 'admit').mockImplementation((pod: V1Pod) => {
-      return Promise.resolve(pod)
+      const observer = jsonpatch.observe<V1Pod>(pod)
+      return Promise.resolve(JSON.stringify(jsonpatch.generate(observer)))
     })
     const payload = buildCreatePodRequest('busybox')
     const result = await fastify.inject({
@@ -69,7 +72,8 @@ describe('controllers/admission', () => {
   })
   it('Should track requests served', async () => {
     jest.spyOn(mockAdmissionService, 'admit').mockImplementation((pod) => {
-      return Promise.resolve(pod)
+      const observer = jsonpatch.observe<V1Pod>(pod)
+      return Promise.resolve(JSON.stringify(jsonpatch.generate(observer)))
     })
     const testReqResp = await fastify.inject({
       method: 'POST',

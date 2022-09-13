@@ -36,7 +36,15 @@ The following scripts are included in the NPM project configuration
 - `helm:uninstallCertManager` remove cert-manager from the k8s cluster
 
 ## Deploy it
-First add the helm repos `helm repo add k8s https://curium-rocks.github.io/k8s-mutating-webhook` fetch updates `helm repo update`. 
+If you don't already have cert manager installed you will need to run:
+
+``` bash
+helm repo add jetstack https://charts.jetstack.io && helm repo update && \
+  helm upgrade --install --namespace cert-manager --create-namespace \
+  cert-manager jetstack/cert-manager --set installCRDs=true --debug --wait
+```
+
+Add the helm repos `helm repo add k8s https://curium-rocks.github.io/k8s-mutating-webhook` fetch updates `helm repo update`. 
 
 Verify it worked `helm search repo k8s` and you should see something like.
 
