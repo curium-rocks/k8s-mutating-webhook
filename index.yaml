@@ -3,6 +3,16 @@ entries:
   k8s-mutating-webhook:
   - apiVersion: v2
     appVersion: 0.1.0
+    created: "2022-09-13T23:54:09.019895823Z"
+    description: A starter template for a dynamic admission mutating webhook
+    digest: 0eebec90194f3347c1fcf097d514dab3640c55888c6a7b217a7aa0ec241cec99
+    name: k8s-mutating-webhook
+    type: application
+    urls:
+    - https://github.com/curium-rocks/k8s-mutating-webhook/releases/download/k8s-mutating-webhook-0.3.0/k8s-mutating-webhook-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
+    appVersion: 0.1.0
     created: "2022-09-13T11:49:29.135424975Z"
     description: A starter template for a dynamic admission mutating webhook
     digest: cf3c256a883a8368856e9f73ed8ce850be7f6ad16d01aafe62de852c4e6afecf
@@ -21,4 +31,4 @@ entries:
     urls:
     - https://github.com/curium-rocks/k8s-mutating-webhook/releases/download/k8s-mutating-webhook-0.1.0/k8s-mutating-webhook-0.1.0.tgz
     version: 0.1.0
-generated: "2022-09-13T11:49:29.135432574Z"
+generated: "2022-09-13T23:54:09.019912823Z"
