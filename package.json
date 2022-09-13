@@ -42,8 +42,8 @@
   },
   "homepage": "https://github.com/curium-rocks/k8s-mutating-webhook#readme",
   "devDependencies": {
-    "@types/config": "^3.3.0",
     "@jest/globals": "29.0.3",
+    "@types/config": "^3.3.0",
     "@types/jest": "^29.0.0",
     "@typescript-eslint/eslint-plugin": "^5.15.0",
     "@typescript-eslint/parser": "^5.15.0",
@@ -60,6 +60,7 @@
     "@fastify/under-pressure": "^8.1.0",
     "@kubernetes/client-node": "^0.17.0",
     "config": "^3.3.8",
+    "fast-json-patch": "^3.1.1",
     "fastify": "^4.5.3",
     "fastify-plugin": "^4.2.1",
     "inversify": "^6.0.1",

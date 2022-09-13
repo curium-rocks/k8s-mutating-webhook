@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/curium-rocks/k8s-mutating-webhook
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   tag: main
 
 tlsSecretName: "k8s-mutating-webhook"
@@ -17,12 +17,9 @@ serviceAccount:
 
 podAnnotations: {}
 podSecurityContext: {}
-securityContext: {}
+securityContext:
+  runAsUser: 1000
 
-allowedImages: []
-blockedImages:
-  - badbox
-strictMode: false
 logLevel: "info"
 
 resources:

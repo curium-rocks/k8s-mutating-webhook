@@ -1,36 +1,33 @@
 import { inject, injectable } from 'inversify'
 import { TYPES } from '../types'
 import { Logger } from 'pino'
+import { V1Pod, V1PodSpec } from '@kubernetes/client-node'
 
 export interface IAdmission {
-  allowAdmission(containerImages: string[]): Promise<boolean>
+  admit(pod: V1Pod): Promise<V1Pod>
 }
 
 @injectable()
 export class Admission implements IAdmission {
-  private readonly allowedImages: Set<string>
-  private readonly blockedImages: Set<string>
-  private readonly strictMode: boolean
   private readonly logger: Logger
 
   constructor (
-    @inject(TYPES.Services.Logging)parentLogger: Logger,
-    @inject(TYPES.Config.AllowedList)allowedImages: string[],
-    @inject(TYPES.Config.BlockedList)blockedImages: string[],
-    @inject(TYPES.Config.StrictMode)strictMode: boolean) {
+    @inject(TYPES.Services.Logging)parentLogger: Logger) {
     this.logger = parentLogger.child({ module: 'services/Admission' })
-    this.allowedImages = new Set(allowedImages.map((s) => s.toLowerCase()))
-    this.blockedImages = new Set(blockedImages.map((s) => s.toLowerCase()))
-    this.strictMode = strictMode
-    this.logger.info('loaded with {strictMode=%s, allowedImageCount=%d, blockedImageCount=%d, allowedImages=%j, blockImages=%j}', this.strictMode, this.allowedImages.size, this.blockedImages.size, Array.from(this.allowedImages), Array.from(this.blockedImages))
   }
 
-  async allowAdmission (containerImages: string[]): Promise<boolean> {
-    for (const idx in containerImages) {
-      const imageName = containerImages[idx].toLowerCase()
-      if (this.blockedImages.has(imageName)) return Promise.resolve(false)
-      if (this.strictMode && !this.allowedImages.has(imageName)) return Promise.resolve(false)
-    }
-    return Promise.resolve(true)
+  async admit (pod: V1Pod): Promise<V1Pod> {
+    const spec = pod.spec as V1PodSpec
+    if (!spec.securityContext) spec.securityContext = {}
+    if (!spec.securityContext.runAsNonRoot) spec.securityContext.runAsNonRoot = true
+    spec.containers = spec.containers.map((c) => {
+      if (!c.securityContext) c.securityContext = {}
+      if (c.securityContext.allowPrivilegeEscalation == null || c.securityContext.allowPrivilegeEscalation) c.securityContext.allowPrivilegeEscalation = false
+      if (c.securityContext.privileged == null || c.securityContext.privileged) c.securityContext.privileged = false
+      if (!c.securityContext.readOnlyRootFilesystem) c.securityContext.readOnlyRootFilesystem = true
+      if (!c.securityContext.runAsNonRoot) c.securityContext.runAsNonRoot = true
+      return c
+    })
+    return Promise.resolve(pod)
   }
 }

@@ -1,7 +1,8 @@
-import { V1Container, V1PodSpec } from '@kubernetes/client-node'
+import { V1Pod } from '@kubernetes/client-node'
 import { FastifyInstance, FastifyPluginOptions } from 'fastify'
 import { IAdmission } from '../services/admission'
 import { TYPES } from '../types'
+import * as jsonpatch from 'fast-json-patch'
 
 export function AdmissionController (instance: FastifyInstance, opts: FastifyPluginOptions, done: Function) {
   instance.log.info('Registering AdmissionController')
@@ -11,38 +12,32 @@ export function AdmissionController (instance: FastifyInstance, opts: FastifyPlu
 
   instance.post('/', async (req, reply) => {
     const body: any = req.body
-    const images : string[] = []
     if (body.kind === 'AdmissionReview' && body.request.operation === 'CREATE' && body.request.kind.kind === 'Pod') {
-      const newPod: V1PodSpec = body.request.object.spec
-      const pushImage = (c: V1Container) => {
-        images.push(c.image as string)
-      }
-      if (Array.isArray(newPod.containers)) {
-        newPod.containers.forEach(pushImage)
-      }
-      if (Array.isArray(newPod.initContainers)) {
-        newPod.initContainers?.forEach(pushImage)
-      }
-      if (Array.isArray(newPod.ephemeralContainers)) {
-        newPod.ephemeralContainers?.forEach(pushImage)
-      }
-      instance.log.info(`Detected images in pod create request = [${images.join(',')}]`)
-    }
-    const allow = await admissionService.allowAdmission(images)
-    if (!allow) {
-      instance.log.warn(`Blocked creating pod with images = [${images.join(',')}]`)
-    }
-    reply.send({
-      apiVersion: 'admission.k8s.io/v1',
-      kind: 'AdmissionReview',
-      response: {
-        uid: body.request.uid,
-        allowed: allow,
-        status: {
-          message: `One of the images in [${images.join(',')}] is not allowed, denied`
+      const newPod: V1Pod = body.request.object
+      const observer = jsonpatch.observe<V1Pod>(newPod)
+      await admissionService.admit(newPod)
+      const diff = jsonpatch.generate(observer)
+      instance.log.info('Generated patch = %j', diff)
+      reply.send({
+        apiVersion: 'admission.k8s.io/v1',
+        kind: 'AdmissionReview',
+        response: {
+          uid: body.request.uid,
+          allowed: true,
+          patch: Buffer.from(JSON.stringify(diff)).toString('base64'),
+          patchType: 'JSONPatch'
         }
-      }
-    })
+      })
+    } else {
+      reply.send({
+        apiVersion: 'admission.k8s.io/v1',
+        kind: 'AdmissionReview',
+        response: {
+          uid: body.request.uid,
+          allowed: true
+        }
+      })
+    }
     processStats.requestsServed = (processStats.requestsServed as number) + 1
   })
 

@@ -7,6 +7,7 @@ import { AdmissionController } from '../../src/controllers/admission'
 import { Container } from 'inversify'
 import { TYPES } from '../../src/types'
 import pino from 'pino'
+import { V1Pod } from '@kubernetes/client-node'
 
 function buildCreatePodRequest (imageName: string) : any {
   const baseReq = require('../requests/createPod.json')
@@ -21,7 +22,7 @@ describe('controllers/admission', () => {
   beforeEach(() => {
     fastify = Fastify()
     container = new Container()
-    mockAdmissionService = jest.mocked<IAdmission>(new Admission(pino({ level: 'error' }), [], [], false))
+    mockAdmissionService = jest.mocked<IAdmission>(new Admission(pino({ level: 'error' })))
     container.bind<IAdmission>(TYPES.Services.Admission).toConstantValue(mockAdmissionService)
     fastify.register(fastifyInversifyPlugin, {
       container
@@ -30,24 +31,12 @@ describe('controllers/admission', () => {
       prefix: '/api/v1/admission'
     })
   })
-  it('Should block images on disallow list', async () => {
-    jest.spyOn(mockAdmissionService, 'allowAdmission').mockImplementation((images) => {
-      return Promise.resolve(false)
-    })
-    const payload = buildCreatePodRequest('busybox')
-    const result = await fastify.inject({
-      method: 'POST',
-      payload,
-      url: '/api/v1/admission'
-    })
-    expect(result.statusCode).toBe(200)
-    const responseBody = JSON.parse(result.body)
-    expect(responseBody.response.uid).toEqual(payload.request.uid)
-    expect(responseBody.response.allowed).toBeFalsy()
-  })
-  it('Should allow images not ondisallow list', async () => {
-    jest.spyOn(mockAdmissionService, 'allowAdmission').mockImplementation((images) => {
-      return Promise.resolve(true)
+  it('Should patch pods when needed', async () => {
+    jest.spyOn(mockAdmissionService, 'admit').mockImplementation((pod: V1Pod) => {
+      if (!pod.metadata) pod.metadata = {}
+      if (!pod.metadata.annotations) pod.metadata.annotations = {}
+      pod.metadata.annotations.test = 'test'
+      return Promise.resolve(pod)
     })
     const payload = buildCreatePodRequest('busybox')
     const result = await fastify.inject({
@@ -59,10 +48,28 @@ describe('controllers/admission', () => {
     const responseBody = JSON.parse(result.body)
     expect(responseBody.response.uid).toEqual(payload.request.uid)
     expect(responseBody.response.allowed).toBeTruthy()
+    const patch = Buffer.from(responseBody.response.patch, 'base64').toString()
+    expect(patch).toEqual('[{"op":"add","path":"/metadata/annotations","value":{"test":"test"}}]')
+  })
+  it('Should only mutate pods when required', async () => {
+    jest.spyOn(mockAdmissionService, 'admit').mockImplementation((pod: V1Pod) => {
+      return Promise.resolve(pod)
+    })
+    const payload = buildCreatePodRequest('busybox')
+    const result = await fastify.inject({
+      method: 'POST',
+      payload,
+      url: '/api/v1/admission'
+    })
+    expect(result.statusCode).toBe(200)
+    const responseBody = JSON.parse(result.body)
+    expect(responseBody.response.uid).toEqual(payload.request.uid)
+    expect(responseBody.response.allowed).toBeTruthy()
+    expect(responseBody.response.patch).toEqual(Buffer.from(JSON.stringify([])).toString('base64'))
   })
   it('Should track requests served', async () => {
-    jest.spyOn(mockAdmissionService, 'allowAdmission').mockImplementation((images) => {
-      return Promise.resolve(true)
+    jest.spyOn(mockAdmissionService, 'admit').mockImplementation((pod) => {
+      return Promise.resolve(pod)
     })
     const testReqResp = await fastify.inject({
       method: 'POST',

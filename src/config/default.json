@@ -1,9 +1,4 @@
 {
-  "imageAcl": {
-    "allowed": [],
-    "blocked": ["badbox"],
-    "strictMode": false
-  },
   "tls": {
     "enabled": false,
     "keyPath": "/var/run/secrets/tls/tls.key",
