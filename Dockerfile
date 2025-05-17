@@ -1,4 +1,4 @@
-FROM node:lts-alpine as build-base
+FROM node:22.15.1-alpine3.21 as build-base
 RUN apk add --update --no-cache \
   python3 \
   make \
@@ -19,7 +19,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-FROM node:lts-alpine
+FROM node:22.15.1-alpine3.21
 RUN apk add --update --no-cache dumb-init
 ENV NODE_ENV production
 USER node
